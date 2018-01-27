@@ -197,7 +197,7 @@ long int getDifficultyLevelInput() {
 
 long int getDigit() {
     /*
-     * The size of this buffer is admittedly an arbitrary number.  It the size is too small, strange things begin to
+     * The size of this buffer is admittedly an arbitrary number.  If the size is too small, strange things begin to
      * happen, so it's clearly important.
      */
     char buf[4096];
