@@ -2,25 +2,91 @@
 #include <stdlib.h>
 #include <time.h>
 
-int getRandom();
+int getRandom(int max);
+char getRandomOperation();
 long int getDigit();
-long int getProblemCount();
-long int getDifficultyLevel();
+long int getProblemCountInput();
+long int getDifficultyLevelInput();
+typedef struct DifficultyLevel {
+    long int difficultyLevel;
+    int min;
+    int max;
+} DifficultyLevel;
+int generate_question(struct DifficultyLevel, int questionNumber);
+struct DifficultyLevel getDifficultyLevel(long int difficulty);
+
 
 int main() {
-    long int problems = getProblemCount();
-    long int difficulty = getDifficultyLevel();
+    long int problems = getProblemCountInput();
+    long int difficulty = getDifficultyLevelInput();
+    struct DifficultyLevel difficultyLevel = getDifficultyLevel(difficulty);
+    int i;
+    for (i =1; i < problems; i++) {
+        int answer = generate_question(difficultyLevel, i);
+    }
 
     exit(0);
 }
 
-int getRandom() {
-  /* seed the random number generator */
-  srand(time(NULL));
-  return rand() % 100;
+char getRandomOperation() {
+    int random = getRandom(3);
+    switch (random) {
+        case 0:
+            return '+';
+        case 1:
+            return '-';
+        case 2:
+            return '*';
+        case 3:
+            return '/';
+        default:
+            printf("ERROR: Reached impossible operation type!\n");
+            exit(1);
+    }
 }
 
-long int getProblemCount() {
+int generate_question(struct DifficultyLevel difficultyLevel, int questionNumber) {
+    int operand1 = getRandom(difficultyLevel.max);
+    int operand2 = getRandom(difficultyLevel.max);
+
+    char operation = getRandomOperation();
+    printf("Question %d: %d %c %d\n", questionNumber, operand1, operation, operand2);
+}
+
+struct DifficultyLevel getDifficultyLevel(long int difficulty) {
+    struct DifficultyLevel difficultyLevel;
+    difficultyLevel.difficultyLevel = difficulty;
+    switch (difficulty) {
+        case 1:
+            difficultyLevel.min = 1;
+            difficultyLevel.max = 10;
+            break;
+        case 2:
+            difficultyLevel.min = 1;
+            difficultyLevel.max = 50;
+            break;
+        case 3:
+            difficultyLevel.min = 1;
+            difficultyLevel.max = 100;
+            break;
+        case 4:
+            difficultyLevel.min = -100;
+            difficultyLevel.max = 100;
+            break;
+        default:
+            printf("ERROR: Reached impossible difficulty level!\n");
+            exit(1);
+    }
+    return difficultyLevel;
+}
+
+int getRandom(int max) {
+  /* seed the random number generator */
+  srand(time(NULL));
+  return srand() % max;
+}
+
+long int getProblemCountInput() {
     long int problems;
     while (1) {
         printf("Please enter the number of problems you would like to answer (1-20): ");
@@ -32,7 +98,7 @@ long int getProblemCount() {
     return problems;
 }
 
-long int getDifficultyLevel() {
+long int getDifficultyLevelInput() {
     long int difficulty;
     while (1) {
         printf("Select difficulty (1-4): ");
