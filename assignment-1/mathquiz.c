@@ -21,12 +21,14 @@ void printNegativeFeedback(int random, int realAnswer);
 void generateReport(int correctAnswers, long int totalQuestions);
 
 int main() {
-    srand((unsigned int)time(NULL));
-    long int problems = getProblemCountInput();
-    long int difficulty = getDifficultyLevelInput();
-    struct DifficultyLevel difficultyLevel = getDifficultyLevel(difficulty);
+    long int problems, difficulty;
+    struct DifficultyLevel difficultyLevel;
     int correctAnswers = 0;
     int i;
+    srand((unsigned int)time(NULL));
+    problems = getProblemCountInput();
+    difficulty = getDifficultyLevelInput();
+    difficultyLevel = getDifficultyLevel(difficulty);
     for (i = 1; i < problems+1; i++) {
         int realAnswer = generate_question(difficultyLevel, i);
         int isCorrect = answer_question(realAnswer);
@@ -218,8 +220,7 @@ long int getDigit() {
          */
         if (buf[0] != '\n' && (*p == '\n' || *p == '\0')) {
             return i;
-        } else {
-            return -999;
         }
     }
+    return -999;
 }
