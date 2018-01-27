@@ -2,42 +2,59 @@
 #include <stdlib.h>
 #include <time.h>
 
-int getRandom(int max);
+int getRandom(int min, int max);
 char getRandomOperation();
 long int getDigit();
 long int getProblemCountInput();
 long int getDifficultyLevelInput();
 typedef struct DifficultyLevel {
-    long int difficultyLevel;
     int min;
     int max;
 } DifficultyLevel;
 int generate_question(struct DifficultyLevel, int questionNumber);
+int getActualAnswer(int operand1, int operand2, char operation);
 struct DifficultyLevel getDifficultyLevel(long int difficulty);
-
+int answer_question(int realAnswer);
+void print_response(int isCorrect, int realAnswer);
+void printPositiveFeedback(int random);
+void printNegativeFeedback(int random, int realAnswer);
+void generateReport(int correctAnswers, long int totalQuestions);
 
 int main() {
+    srand((unsigned int)time(NULL));
     long int problems = getProblemCountInput();
     long int difficulty = getDifficultyLevelInput();
     struct DifficultyLevel difficultyLevel = getDifficultyLevel(difficulty);
+    int correctAnswers = 0;
     int i;
-    for (i =1; i < problems; i++) {
-        int answer = generate_question(difficultyLevel, i);
+    for (i = 1; i < problems+1; i++) {
+        int realAnswer = generate_question(difficultyLevel, i);
+        int isCorrect = answer_question(realAnswer);
+        if (isCorrect == 1) {
+            correctAnswers++;
+        }
+        print_response(isCorrect, realAnswer);
     }
-
+    generateReport(correctAnswers, problems);
     exit(0);
 }
 
+void generateReport(int correctAnswers, long int totalQuestions) {
+    printf("=======================\n");
+    printf("Your score was %d/%ld\n", correctAnswers, totalQuestions);
+    printf("=======================\n");
+}
+
 char getRandomOperation() {
-    int random = getRandom(3);
+    int random = getRandom(1, 4);
     switch (random) {
-        case 0:
-            return '+';
         case 1:
-            return '-';
+            return '+';
         case 2:
-            return '*';
+            return '-';
         case 3:
+            return '*';
+        case 4:
             return '/';
         default:
             printf("ERROR: Reached impossible operation type!\n");
@@ -45,17 +62,87 @@ char getRandomOperation() {
     }
 }
 
-int generate_question(struct DifficultyLevel difficultyLevel, int questionNumber) {
-    int operand1 = getRandom(difficultyLevel.max);
-    int operand2 = getRandom(difficultyLevel.max);
+void print_response(int isCorrect, int realAnswer) {
+    int random = getRandom(1, 3);
+    if (isCorrect == 1) {
+        printPositiveFeedback(random);
+    } else {
+        printNegativeFeedback(random, realAnswer);
+    }
+}
 
+void printPositiveFeedback(int random) {
+    switch (random) {
+        case 1:
+            printf("Great job!\n\n");
+            break;
+        case 2:
+            printf("Good work!\n\n");
+            break;
+        case 3:
+            printf("Fantastic!\n\n");
+            break;
+        default:
+            printf("ERROR: Reached default in positive feedback switch!\n");
+            exit(1);
+    }
+}
+
+void printNegativeFeedback(int random, int realAnswer) {
+    switch (random) {
+        case 1:
+            printf("Sorry, the correct answer was %d\n\n", realAnswer);
+            break;
+        case 2:
+            printf("Better luck next time.  The answer was %d\n\n", realAnswer);
+            break;
+        case 3:
+            printf("Whoops!  The correct answer was %d\n\n", realAnswer);
+            break;
+        default:
+            printf("ERROR: Reached default in negative feedback switch!\n");
+            exit(1);
+    }
+}
+
+int generate_question(struct DifficultyLevel difficultyLevel, int questionNumber) {
+    int operand1 = getRandom(difficultyLevel.min, difficultyLevel.max);
+    int operand2 = getRandom(difficultyLevel.min, difficultyLevel.max);
     char operation = getRandomOperation();
-    printf("Question %d: %d %c %d\n", questionNumber, operand1, operation, operand2);
+    /* prevent from dividing by zero */
+    while (operation == '/' && operand2 == 0) {
+        operand2 = getRandom(difficultyLevel.min, difficultyLevel.max);
+    }
+    printf("Question %d: %d %c %d = ", questionNumber, operand1, operation, operand2);
+    return getActualAnswer(operand1, operand2, operation);
+}
+
+int answer_question(int realAnswer) {
+    long int userAnswer = getDigit();
+    if (userAnswer == realAnswer) {
+        return 1;
+    }
+    return 0;
+}
+
+int getActualAnswer(int operand1, int operand2, char operation) {
+    switch (operation) {
+        case '+':
+            return operand1 + operand2;
+        case '-':
+            return operand1 - operand2;
+        case '*':
+            return operand1 * operand2;
+        case '/':
+            return operand1 / operand2;
+        default:
+            printf("ERROR: Attempted to get answer with impossible operation type!\n");
+            exit(1);
+    }
 }
 
 struct DifficultyLevel getDifficultyLevel(long int difficulty) {
     struct DifficultyLevel difficultyLevel;
-    difficultyLevel.difficultyLevel = difficulty;
     switch (difficulty) {
         case 1:
             difficultyLevel.min = 1;
@@ -80,10 +167,8 @@ struct DifficultyLevel getDifficultyLevel(long int difficulty) {
     return difficultyLevel;
 }
 
-int getRandom(int max) {
-  /* seed the random number generator */
-  srand(time(NULL));
-  return srand() % max;
+int getRandom(int min, int max) {
+  return rand() % (max + 1 - min) + min;
 }
 
 long int getProblemCountInput() {
