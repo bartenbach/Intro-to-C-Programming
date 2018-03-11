@@ -1,7 +1,7 @@
 #ifndef UNTITLED_VIRTUALMACHINE_H
 #define UNTITLED_VIRTUALMACHINE_H
 typedef struct VirtualMachine {
-    int memory[100];
+    char memory[10][10];
     int accumulator;
     int instructionCounter;
     int instructionRegister;
@@ -15,9 +15,23 @@ typedef struct CommandLine {
 }CommandLine;
 CommandLine* compile(CommandLine[100]);
 CommandLine getCommand(char[100]);
-VirtualMachine loadVm(CommandLine*);
+VirtualMachine loadVm();
 void printCommands(CommandLine*);
-int instructionToInt(const char instruction[10]);
+void executeInstruction(VirtualMachine, CommandLine);
+void vmHalt(VirtualMachine);
+void vmRead(VirtualMachine*, CommandLine);
+void vmWrite(VirtualMachine, CommandLine);
+void vmPrint(VirtualMachine, CommandLine);
+void vmStore(VirtualMachine, CommandLine);
+void vmSet(VirtualMachine, CommandLine);
+void vmAdd(VirtualMachine, CommandLine);
+void vmSubtract(VirtualMachine, CommandLine);
+void vmDivide(VirtualMachine, CommandLine);
+void vmMultiply(VirtualMachine, CommandLine);
+void vmModulus(VirtualMachine, CommandLine);
+void vmBranch(VirtualMachine, CommandLine);
+void vmBranchNegative(VirtualMachine, CommandLine);
+void vmBranchZero(VirtualMachine, CommandLine);
 void printVmState(VirtualMachine vm);
-void execute();
+void execute(VirtualMachine vm, CommandLine*);
 #endif

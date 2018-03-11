@@ -9,13 +9,13 @@ int main() {
     CommandLine commandLines[100];
     CommandLine *commandLine = compile(commandLines);
     /*printCommands(commandLine);*/
-    VirtualMachine vm = loadVm(commandLine);
-    printVmState(vm);
+    VirtualMachine vm = loadVm();
+    execute(vm, commandLine);
     return 0;
 }
 
 void printVmState(VirtualMachine vm) {
-    int i;
+    int i,j;
     printf("REGISTERS:\n");
     printf("%-25s+%04d\n", "accumulator", vm.accumulator);
     printf("%-27s %02d\n", "instructionCounter", vm.instructionCounter);
@@ -23,74 +23,86 @@ void printVmState(VirtualMachine vm) {
     printf("%-27s %02d\n", "operationCode", vm.operationCode);
     printf("%-27s %02d\n", "operand", vm.operand);
     printf("MEMORY:\n");
-    for (i = 0; i < 100; i++) {
-
+    printf("%8d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n",0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    for (i = 0; i < 10; i++) {
+        printf("%2d ", i * 10);
+        for (j = 0; j < 10; j++) {
+            printf("%+05i ", vm.memory[i][j]);
+        }
+        printf("\n");
     }
 }
 
-void execute() {
-
-}
-
-VirtualMachine loadVm(CommandLine* commandLine) {
-    VirtualMachine vm = { 0 };
+void execute(VirtualMachine vm, CommandLine commandLines[100]) {
     int i;
-    int instruction;
-    int address;
-    char* ptr;
-    char string1[4];
-    char string2[4];
-    for (i = 0; i < 100; i++) {
-        if (commandLine[i].index == -1) {
+    /* handoff stdin to the vm */
+    stdin = fopen("/dev/tty", "r");
+    for (i = 0; i < 100; ++i) {
+        if (commandLines[i].index == -1) {
             break;
         }
-        instruction = instructionToInt(commandLine[i].instruction);
-        address = (int) commandLine[i].address;
-        sprintf(string1,"%d",instruction);
-        sprintf(string2,"%d",address);
-        strcat(string1,string2);
-        /*printf("%d\n", atoi(string1));*/
-        vm.memory[i] = (int) strtol(string1, &ptr, 10);
+        printf("Command [ Index: %ld, Instruction: %s, Address: %ld ]\n", commandLines[i].index,
+               commandLines[i].instruction, commandLines[i].address);
+        executeInstruction(vm, commandLines[i]);
     }
+}
+
+VirtualMachine loadVm() {
+    VirtualMachine vm = { 0 };
+    memset(vm.memory, 0, strlen(vm.memory[0]));
     return vm;
 }
 
-int instructionToInt(const char instruction[10]) {
+void executeInstruction(VirtualMachine vm, CommandLine commandLine) {
+    char* instruction = commandLine.instruction;
     if (strcmp("READ",instruction) == 0) {
-        return 10;
+        vmRead(&vm, commandLine);
     } else if (strcmp("WRIT",instruction) == 0) {
-        return 11;
+        vmWrite(vm, commandLine);
     } else if (strcmp("PRNT", instruction) == 0) {
-        return 12;
     } else if (strcmp("LOAD", instruction) == 0) {
-        return 20;
     } else if (strcmp("STOR", instruction) == 0) {
-        return 21;
     } else if (strcmp("SET", instruction) == 0) {
-        return 22;
     } else if (strcmp("ADD", instruction) == 0) {
-        return 30;
     } else if (strcmp("SUB", instruction) == 0) {
-        return 31;
     } else if (strcmp("DIV", instruction) == 0) {
-        return 32;
     } else if (strcmp("MULT", instruction) == 0) {
-        return 33;
     } else if (strcmp("MOD", instruction) == 0) {
-        return 34;
     } else if (strcmp("BRAN", instruction) == 0) {
-        return 40;
     } else if (strcmp("BRNG", instruction) == 0) {
-        return 41;
     } else if (strcmp("BRZR", instruction) == 0) {
-        return 42;
     } else if (strcmp("HALT", instruction) == 0) {
-        return 99;
+        vmHalt(vm);
     } else {
+        /* if anything reaches this point, it's a bogus instruction */
         printf("Unrecognized instruction: %s\n", instruction);
+        exit(1);
     }
-    /* if anything reaches this point, it's a bogus instruction */
-    exit(1);
+}
+
+void vmRead(VirtualMachine *vm, CommandLine commandLine) {
+    char input[3];
+    int j;
+    int y = (int) (commandLine.address % 10);
+    commandLine.address /= 10;
+    int x = (int) (commandLine.address % 10);
+    fgets(input, sizeof(input), stdin);
+    /* trim the newline */
+    input[strcspn(input, "\n")] = 0;
+    printf("Writing %s to %ld\n", input, commandLine.address);
+    printf("coords: %d,%d", x, y);
+    /*strcpy(vm.memory[x][y], input);*/
+    /*vm->memory[x][y] = input;*/
+
+}
+
+void vmWrite(VirtualMachine vm, CommandLine commandLine) {
+    printf("%s\n", vm.memory[commandLine.address]);
+}
+
+void vmHalt(VirtualMachine vm) {
+    printVmState(vm);
+    exit(0);
 }
 
 CommandLine *compile(CommandLine commandLines[100]) {
