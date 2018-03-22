@@ -1,7 +1,7 @@
 #ifndef UNTITLED_VIRTUALMACHINE_H
 #define UNTITLED_VIRTUALMACHINE_H
 typedef struct VirtualMachine {
-    char memory[10][10];
+    char memory[100][4];
     int accumulator;
     int instructionCounter;
     int instructionRegister;
@@ -9,31 +9,28 @@ typedef struct VirtualMachine {
     int operand;
 }VirtualMachine;
 typedef struct CommandLine {
-    long index;
+    char index[3];
     char instruction[10];
-    long address;
+    char address[6];
 }CommandLine;
-CommandLine* compile(CommandLine[100]);
+VirtualMachine compile();
 CommandLine getCommand(char[100]);
-VirtualMachine loadVm();
-void printCommands(CommandLine*);
-void executeInstruction(VirtualMachine*, CommandLine);
-void vmHalt(VirtualMachine*);
-void vmRead(VirtualMachine*, CommandLine);
-void vmWrite(VirtualMachine*, CommandLine);
-void vmLoad(VirtualMachine*, CommandLine);
-void vmPrint(VirtualMachine, CommandLine);
-void vmStore(VirtualMachine*, CommandLine);
-void vmSet(VirtualMachine, CommandLine);
-void vmAdd(VirtualMachine, CommandLine);
-void vmSubtract(VirtualMachine, CommandLine);
-void vmDivide(VirtualMachine, CommandLine);
-void vmMultiply(VirtualMachine, CommandLine);
-void vmModulus(VirtualMachine, CommandLine);
-void vmBranch(VirtualMachine, CommandLine);
-void vmBranchNegative(VirtualMachine, CommandLine);
-void vmBranchZero(VirtualMachine, CommandLine);
+VirtualMachine loadVm(CommandLine[100]);
+int stringToInt(const char *s);
+int getFormattedDigit(char c);
+char* instructionToCharArray(char* instruction, char* address);
+int executeInstruction(VirtualMachine*, char*, int, int);
+void vmHalt(VirtualMachine*, int);
+void vmRead(VirtualMachine*, int);
+void vmWrite(VirtualMachine*, int);
+void vmLoad(VirtualMachine*, int);
+void vmPrint(VirtualMachine*, int);
+void vmStore(VirtualMachine*, int);
+void vmMath(VirtualMachine *vm, int address, int operation, int currentAddress);
+int vmBranchNegative(VirtualMachine*);
+int vmBranchZero(VirtualMachine*);
 void printVmState(VirtualMachine*);
-void execute(VirtualMachine*, CommandLine*);
-void getBinary(int num, char *str);
+void execute(VirtualMachine*);
+void checkForIllegalCharacter(VirtualMachine *vm, int value, int address);
+void checkForOverflow(VirtualMachine *vm ,int value, int address);
 #endif
